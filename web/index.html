@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Omlet Clone</title>
+    <style>
+        body { font-family: sans-serif; background: #222; color: #eee; }
+        .container { max-width: 800px; margin: 2rem auto; padding: 1rem; background: #333; border-radius: 8px; }
+        h1, h2 { color: #0f0; }
+        #salas-list { list-style: none; padding: 0; }
+        #salas-list li { background: #444; margin-bottom: 10px; padding: 15px; border-radius: 4px; }
+        code { background: #555; padding: 2px 5px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard de Salas</h1>
+        <h2>Salas Activas</h2>
+        <ul id="salas-list">
+            <!-- Las salas se cargarán aquí -->
+        </ul>
+    </div>
+
+    <script>
+        const salasList = document.getElementById('salas-list');
+        const BACKEND_URL = 'http://localhost:3000';
+
+        async function cargarSalas() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/salas`);
+                const salas = await response.json();
+                
+                salasList.innerHTML = ''; // Limpiar la lista
+
+                if (Object.keys(salas).length === 0) {
+                    salasList.innerHTML = '<li>No hay salas activas.</li>';
+                }
+
+                for (const id in salas) {
+                    const sala = salas[id];
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <strong>ID Sala:</strong> <code>${sala.id}</code><br>
+                        <strong>Host:</strong> ${sala.hostIp}:${sala.hostPort}<br>
+                        <strong>Jugadores:</strong> ${sala.players.length}
+                    `;
+                    salasList.appendChild(li);
+                }
+            } catch (error) {
+                salasList.innerHTML = '<li>Error al cargar las salas. ¿Está el backend funcionando?</li>';
+                console.error('Error:', error);
+            }
+        }
+
+        // Cargar las salas al inicio y luego cada 3 segundos
+        cargarSalas();
+        setInterval(cargarSalas, 3000);
+    </script>
+</body>
+</html>

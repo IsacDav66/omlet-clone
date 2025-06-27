@@ -1,0 +1,62 @@
+// client-app/player_tap.js
+const dgram = require('dgram');
+const axios = require('axios');
+const { Tap } = require('tuntap'); // <-- CAMBIO AQUÍ
+
+const BACKEND_URL = 'http://localhost:3000';
+const MTU = 1500;
+
+const VIRTUAL_NETMASK = '255.255.255.0';
+const PLAYER_VIRTUAL_IP = '10.80.0.2'; 
+
+const udpClient = dgram.createSocket('udp4');
+
+const tap = new Tap({ // <-- CAMBIO AQUÍ (usamos Tap, no Tun)
+    name: 'omlet-tap1',
+    ip: PLAYER_VIRTUAL_IP,
+    netmask: VIRTUAL_NETMASK,
+    mtu: MTU,
+});
+
+async function joinRoom(salaId) {
+    if (!salaId) {
+        console.error('Uso: node player_tap.js <salaId>');
+        return;
+    }
+
+    try {
+        const response = await axios.post(`${BACKEND_URL}/sala/join`, { salaId, playerIp: 'dummy' });
+        const { hostIp, hostPort } = response.data;
+        console.log(`[Player-TAP] Conectando al host en ${hostIp}:${hostPort}`);
+
+        tap.on('data', (buffer) => {
+            console.log(`[TAP -> UDP] Paquete de ${buffer.length} bytes del juego. Enviando al host.`);
+            udpClient.send(buffer, hostPort, hostIp);
+        });
+        
+        udpClient.on('message', (buffer) => {
+            console.log(`[UDP -> TAP] Paquete de ${buffer.length} bytes recibido del host. Inyectando en TAP.`);
+            tap.write(buffer);
+        });
+
+        tap.up();
+        console.log(`[TAP] Interfaz virtual '${tap.name}' creada con IP ${PLAYER_VIRTUAL_IP}`);
+        console.log('--- Jugador listo. Ahora, abre un juego y busca partidas en LAN. ---');
+        
+        udpClient.send(Buffer.from('hello-host'), hostPort, hostIp);
+
+    } catch (error) {
+        console.error('[Player-TAP] Error al unirse:', error.message);
+        process.exit(1);
+    }
+}
+
+const salaId = process.argv[2];
+joinRoom(salaId);
+
+process.on('SIGINT', () => {
+    console.log('\nCerrando jugador...');
+    tap.down();
+    udpClient.close();
+    process.exit();
+});
