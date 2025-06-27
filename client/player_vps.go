@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -108,14 +109,17 @@ func main() {
 
 func joinRoomInBackend(salaId string) (string, int) {
 	reqBody, _ := json.Marshal(map[string]string{"salaId": salaId})
-	resp, err := http.Post(fmt.Sprintf("%s/unirse", BACKEND_URL), "application/json", bytes.NewBuffer(reqBody))
+	// AÑADIMOS "/sala" a la URL
+	resp, err := http.Post(fmt.Sprintf("%s/sala/unirse", BACKEND_URL), "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
 		log.Fatalf("Error crítico al unirse a la sala en el backend: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("El backend devolvió un estado no esperado al unirse: %s", resp.Status)
+		// Este log es más detallado y nos ayudará si hay más problemas
+		body, _ := io.ReadAll(resp.Body)
+		log.Fatalf("El backend devolvió un estado no esperado al unirse: %s. Respuesta: %s", resp.Status, string(body))
 	}
 
 	var apiResp JoinRoomResponse
