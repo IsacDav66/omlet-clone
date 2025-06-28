@@ -334,7 +334,7 @@ func configureAndUpTap(ipAddress string) {
 
 	log.Printf("Configurando IP %s para la interfaz...", ipAddress)
 	if os.Getenv("OS") == "Windows_NT" {
-		cmd := exec.Command("netsh", "interface", "ip", "set", "address", fmt.Sprintf("name=\"%s\"", tap.Name()), "static", ipAddress, NETMASK)
+		cmd := exec.Command("netsh", "interface", "ip", "set", "address", "name="+tap.Name(), "source=static", "addr="+ipAddress, "mask="+NETMASK)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			log.Fatalf("Error al configurar IP (Windows): %v\n%s", err, string(output))
