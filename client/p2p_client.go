@@ -18,7 +18,7 @@ import (
 // --- CONFIGURACIÓN ---
 const (
 	// ¡¡¡IMPORTANTE!!! Reemplaza "localhost" por la IP pública de tu VPS
-	SIGNALING_URL = "ws://3.137.193.55:3000"
+	SIGNALING_URL = "ws://129.153.131.82:3000"
 	MTU           = 1500
 	NETMASK       = "255.255.255.0"
 )
