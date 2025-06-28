@@ -1,18 +1,77 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Omlet Clone</title>
     <style>
-        body { font-family: sans-serif; background: #222; color: #eee; }
-        .container { max-width: 800px; margin: 2rem auto; padding: 1rem; background: #333; border-radius: 8px; }
-        h1, h2 { color: #0f0; }
-        #salas-list { list-style: none; padding: 0; }
-        #salas-list li { background: #444; margin-bottom: 10px; padding: 15px; border-radius: 4px; }
-        code { background: #555; padding: 2px 5px; border-radius: 3px; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem 2rem;
+            background: #252526;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+
+        h1,
+        h2 {
+            color: #4ec9b0;
+            border-bottom: 2px solid #4ec9b0;
+            padding-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: #9cdcfe;
+            border-bottom: 1px solid #555;
+        }
+
+        #salas-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        #salas-list li {
+            background: #333;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 5px solid #4ec9b0;
+            transition: background-color 0.2s;
+        }
+
+        #salas-list li:hover {
+            background-color: #3c3c3c;
+        }
+
+        code {
+            background: #1e1e1e;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-family: "Fira Code", "Courier New", monospace;
+            color: #ce9178;
+        }
+
+        .empty-state,
+        .error-state {
+            color: #888;
+            text-align: center;
+            padding: 2rem;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Dashboard de Salas</h1>
@@ -24,32 +83,45 @@
 
     <script>
         const salasList = document.getElementById('salas-list');
-        const BACKEND_URL = 'http://localhost:3000';
+        // ¡¡¡Asegúrate de que esta IP es correcta!!!
+        const BACKEND_URL = 'http://129.153.131.82:3000';
 
         async function cargarSalas() {
             try {
+                // Hacemos la petición al nuevo endpoint /salas
                 const response = await fetch(`${BACKEND_URL}/salas`);
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
                 const salas = await response.json();
-                
+
                 salasList.innerHTML = ''; // Limpiar la lista
 
                 if (Object.keys(salas).length === 0) {
-                    salasList.innerHTML = '<li>No hay salas activas.</li>';
+                    salasList.innerHTML = '<li class="empty-state">No hay salas activas en este momento.</li>';
+                    return;
                 }
 
-                for (const id in salas) {
-                    const sala = salas[id];
+                // Iteramos sobre el objeto de salas que nos devuelve el API
+                for (const roomId in salas) {
+                    const sala = salas[roomId]; // sala es ahora { id: '...', clientCount: ... }
                     const li = document.createElement('li');
+
+                    const statusColor = sala.clientCount === 2 ? '#6a9955' : '#d16969'; // Verde si está llena, rojo si no
+                    const statusText = sala.clientCount === 2 ? 'Conexión P2P establecida' : 'Esperando jugador...';
+
+                    li.style.borderLeftColor = statusColor;
+
                     li.innerHTML = `
                         <strong>ID Sala:</strong> <code>${sala.id}</code><br>
-                        <strong>Host:</strong> ${sala.hostIp}:${sala.hostPort}<br>
-                        <strong>Jugadores:</strong> ${sala.players.length}
+                        <strong>Participantes:</strong> ${sala.clientCount} / 2 <br>
+                        <strong>Estado:</strong> ${statusText}
                     `;
                     salasList.appendChild(li);
                 }
             } catch (error) {
-                salasList.innerHTML = '<li>Error al cargar las salas. ¿Está el backend funcionando?</li>';
-                console.error('Error:', error);
+                salasList.innerHTML = `<li class="error-state">Error al cargar las salas. <br><small>¿Está el backend funcionando en ${BACKEND_URL}?</small></li>`;
+                console.error('Error al obtener las salas:', error);
             }
         }
 
@@ -58,4 +130,5 @@
         setInterval(cargarSalas, 3000);
     </script>
 </body>
+
 </html>
