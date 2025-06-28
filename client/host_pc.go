@@ -88,7 +88,10 @@ func main() {
 	log.Println("--- Host listo. Ahora, abre un juego y ponlo en modo LAN. ---")
 
 	// Bucle para recibir del Jugador y reenviar al TAP
+	// Bucle para recibir del Jugador y reenviar al TAP
 	buf := make([]byte, MTU)
+	var playerAddr *net.UDPAddr // Guardaremos la dirección del único jugador aquí
+
 	for {
 		n, remoteAddr, err := conn.ReadFromUDP(buf)
 		if err != nil {
@@ -96,17 +99,29 @@ func main() {
 			continue
 		}
 
-		playerKey := remoteAddr.String()
-		if _, ok := players[playerKey]; !ok {
-			log.Printf("[UDP] ¡Jugador conectado desde %s!", playerKey)
-			players[playerKey] = remoteAddr
+		// Si es el primer paquete, guardamos la dirección del jugador
+		if playerAddr == nil {
+			log.Printf("[UDP] ¡Jugador conectado desde %s!", remoteAddr.String())
+			playerAddr = remoteAddr
+
+			// Iniciar una goroutine para leer del TAP y enviar al jugador
+			// La iniciamos AQUÍ para asegurarnos de que ya conocemos al jugador
+			go func() {
+				packet := make([]byte, MTU)
+				for {
+					n, err := ifce.Read(packet)
+					if err != nil {
+						log.Printf("Error al leer de TAP: %v", err)
+						continue
+					}
+					// Usamos la misma conexión para enviar de vuelta
+					conn.WriteToUDP(packet[:n], playerAddr)
+				}
+			}()
 		}
 
-		// Inyectar paquete en la interfaz TAP para que el juego local lo vea
-		_, err = ifce.Write(buf[:n])
-		if err != nil {
-			log.Printf("Error al escribir en TAP: %v", err)
-		}
+		// Inyectar paquete en la interfaz TAP
+		ifce.Write(buf[:n])
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/songgao/water"
 )
@@ -68,6 +69,16 @@ func main() {
 	// Enviar un paquete inicial para "presentarse"
 	conn.Write([]byte("hola-host-soy-el-jugador-del-vps"))
 	log.Printf("[UDP] Conexión establecida con el host en %s", hostAddr.String())
+
+	// *** AÑADIR ESTA GOROUTINE ***
+	// Enviar un "keep-alive" cada 10 segundos para mantener el agujero NAT abierto
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			conn.Write([]byte("keep-alive"))
+		}
+	}()
 
 	// Goroutine para leer del host (UDP) y escribir en la red virtual (TAP)
 	go func() {
