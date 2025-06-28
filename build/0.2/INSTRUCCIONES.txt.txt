@@ -1,0 +1,36 @@
+¡HOLA! ¡GRACIAS POR AYUDARME A PROBAR MI PROYECTO!
+
+Sigue estos 3 simples pasos para empezar:
+
+-------------------------------------------------
+PASO 1: INSTALAR EL DRIVER DE RED (Solo se hace una vez)
+-------------------------------------------------
+1. Haz doble clic en "tap-windows-9.21.2.exe".
+2. Sigue el asistente de instalación (solo tienes que hacer clic en "Next" y "Install").
+3. Si Windows te pide permiso para instalar un controlador de dispositivo, acéptalo.
+4. ¡Listo! No necesitas hacer nada más con este programa.
+
+-------------------------------------------------
+PASO 2: ELEGIR TU ROL
+-------------------------------------------------
+- Si quieres ser el HOST (el que crea la partida en el juego):
+  Abre "OmletClone_Host.exe".
+
+- Si quieres ser un JUGADOR (el que se une a la partida):
+  Abre "OmletClone_Player.exe".
+
+-------------------------------------------------
+PASO 3: CONECTAR Y JUGAR
+-------------------------------------------------
+1. El HOST debe ejecutar su programa primero. Le pedirá un nombre de sala.
+   Ejemplo: "partida_de_amigos"
+
+2. El HOST debe pasarle el nombre exacto de la sala a los demás jugadores.
+
+3. Los JUGADORES ejecutan su programa y escriben el nombre de la sala que les dio el host.
+
+4. Esperen unos segundos. ¡La conexión se establecerá sola!
+
+5. Ahora, abran el juego. El HOST debe crear la partida en modo LAN, y los JUGADORES deberían verla en su lista de partidas multijugador.
+
+¡A jugar!
